@@ -1,0 +1,25 @@
+#---  sample parameter file 
+#     Anything following "#" is considered to be a comment and ignored. 
+
+#---  training data and test data
+train_x_fn=data/covtype-trn.x        # training data
+train_target_fn=data/covtype-trn.lab # training labels
+test_x_fn=data/covtype-tst.x         # test data
+test_target_fn=data/covtype-tst.lab  # test labels
+
+#---  training parameters 
+loss=Logistic      # Loss type square or logistic  
+svrg_interval=2    # Compute average gradient after every two iterations
+sgd_iterations=1   # Do one iteration of SGD before SVRG
+num_iterations=30  # Go through training data 30 times.  This includes both SGD and SVRG iterations. 
+random_seed=1      # Seed for randomization (used to generate the traning data sequence)
+learning_rate=0.1  # Learning rate
+lam=1e-5           # L2 regularization parameter 
+
+#---  control when to display what 
+test_interval=2    # Test after every two iterations of SVRG
+ShowLoss           # Display training loss and test loss
+ShowTiming         # Display progress with time stamps
+
+#---  output predictions at the end of training 
+prediction_fn=output/covtype.prediction   # omit if no need for writing predictions 
