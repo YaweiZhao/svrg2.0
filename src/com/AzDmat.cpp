@@ -328,6 +328,26 @@ void AzDmat::add(double val)
 }
 
 /*-------------------------------------------------------------*/
+double* AzDmat::get(int col) const 
+{
+  const char *eyec = "AzDmat::get"; 
+
+  if (col < 0 || col >= col_num) {
+    throw new AzException(eyec, "col# is out of range"); 
+  }
+  if (column[col] == NULL) {
+    return 0; 
+  }
+  const int dim = this->rowNum();
+  double weights[dim];
+  for (int i=0;i<dim;i++)
+  {
+    weights[i] = column[col]->get(i);
+  }
+  return &weights[0]; 
+}
+
+/*-------------------------------------------------------------*/
 double AzDmat::get(int row, int col) const
 {
   const char *eyec = "AzDmat::get"; 

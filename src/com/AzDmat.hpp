@@ -499,6 +499,7 @@ public:
   }
   
   double get(int row, int col) const; 
+  double* get(int row) const;
   inline double get_nochk(int row, int col) const { /* for speed */
     return column[col]->get_nochk(row); 
   }

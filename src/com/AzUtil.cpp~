@@ -1889,38 +1889,39 @@ void AzBytArr::lwr()
 /*AzTimeLog::print2Logfile
  *print the information to a log file which is used to do data analysis*/
 
-void AzTimeLog::print2Logfile(const char text[], const int len, const char* fn, const char* mod)
+void AzTimeLog::print2Logfile(const char text[],const char* fn, const char* mod)
 {
   AzFile af(fn);
   af.open(mod);
 
   time_t ltime; 
   time(&ltime); 
+  stringstream s;
+  s<< ctime(&ltime)<<text;
+  int size = strlen(s.str().c_str());
+  //char* str_time = ctime(&ltime);
+  //const int length = strlen(str_time)+strlen(text)+1;
+  //char output[length];	
+  //strcpy(output,str_time);
+  //strcat(output,text);
   
-  //string time_str(ctime(&ltime));
-  //string msg(text);
-  //string output = time_str+msg;
-  char* str_time = ctime(&ltime);
-  const int length = strlen(str_time)+strlen(text)+1;
-  char output[length];	
-  strcpy(output,str_time);
-  strcat(output,text);
-  
-  af.writeBytes(output,length);
+  af.writeBytes(s.str().c_str(),size);
 }
 
 /*AzTimeLog::printDouble2Logfile
  *print the information to a log file which is used to do data analysis*/
 
-void AzTimeLog::printDouble2Logfile(const double[] weights,  const int len,const char* fn, const char* mod)
+void AzTimeLog::printDouble2Logfile(const double weights[],const int len,const char* fn, const char* mod)
 {
-  const int size = len * sizeof(double);
-  char weights_str[size];
+  stringstream s;
   for(int i=0;i<len;i++)
-    sprintf(&weights_str[i*sizeof(double)],"%f",weights[i]);
+    s<< weights[i]<<" ";
   AzFile af(fn);
   af.open(mod);
-  af.writeBytes(weights_str,size);
+  s<<"\r\n";
+  int size = strlen(s.str().c_str());
+  af.writeBytes(s.str().c_str(),len);
+  s.str("");
 }
 
 

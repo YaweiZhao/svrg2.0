@@ -878,8 +878,8 @@ public:
 /*-----------------------------------------------------*/
 class AzTimeLog {
 public:
-  static void print2Logfile(const char text[],const int len, const char* fn, const char* mod);
-  static void printDouble2Logfile(const double weights[],const int len, const char* fn, const char* mod);
+  static void print2Logfile(const char text[], const char* fn, const char* mod);
+  static void printDouble2Logfile(const double weights[], const int len, const char* fn, const char* mod);
   static void print(const char *msg, const AzOut &out); 
   static void print(const char *msg1, const char *msg2, const AzOut &out); 
   inline static void print(const AzBytArr &s, const AzOut &out) {

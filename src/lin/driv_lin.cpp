@@ -32,7 +32,7 @@ int main(int argc, const char *argv[])
       driver.printHelp(log_out); 
       return -1; 
     }    
-    driver.train_test(argv[1]); /*defaultly, this is used to do linear regression*/
+    driver.train_test(argv[1]); 
   }
   catch (AzException *e) {
     stat = e; 

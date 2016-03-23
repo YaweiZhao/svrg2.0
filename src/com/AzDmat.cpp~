@@ -328,6 +328,26 @@ void AzDmat::add(double val)
 }
 
 /*-------------------------------------------------------------*/
+double* AzDmat::get(int col) const 
+{
+  const char *eyec = "AzDmat::get"; 
+
+  if (col < 0 || col >= col_num) {
+    throw new AzException(eyec, "col# is out of range"); 
+  }
+  if (column[col] == NULL) {
+    return 0; 
+  }
+  const int dim = this->getNum();
+  double weights[dim];
+  for (int i=0;i<dim;i++)
+  {
+    weights[i] = column[col]->get(i);
+  }
+  return &weights[0]; 
+}
+
+/*-------------------------------------------------------------*/
 double AzDmat::get(int row, int col) const
 {
   const char *eyec = "AzDmat::get"; 
@@ -1279,6 +1299,7 @@ double AzDvect::innerProduct(const AzSvect *vect1) const
 //cout<<"--------------------->num:"<<num<<endl;
 //cout<<"--------------------->vect1->rowNum():"<<vect1->rowNum()<<endl;
 
+int a = vect1->rowNum();
 
   if (num != vect1->rowNum()) {
     throw new AzException(eyec, "shape mismatch"); 
