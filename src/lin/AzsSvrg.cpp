@@ -106,9 +106,17 @@ void AzsSvrg::_train_test()
 
     if (do_show_timing) AzTimeLog::print("Updating weights ... ", log_out); 
     AzIntArr ia_dxs; 
-    const int *dxs = gen_seq(dataSize(), ia_dxs);   
+    const int *dxs = gen_seq(dataSize(), ia_dxs); 
+    /*******************************************************/
+    //we add a speedup factor to the learning rate, and hope this can speedup the calculation
+    double lam_speedup=0.0;
+    lam_speedup=prev_fast.m_gavg.col(0).selfInnerProduct();
+    lam=lam+lam_speedup;
+    //time_t v_local_time;
+    /********************************************************/
     int ix; 
-    for (ix = 0; ix < dataSize(); ++ix) {   
+    //for (ix = 0; ix < dataSize(); ++ix) {//original settings
+    for(ix=0;ix<1000;ix++){// we observe that the loss will not decrease when the inner loop runs for 1000 rounds   
       int dx = dxs[ix];  /* data point index */
       AzDvect v_deriv(class_num); 
       get_deriv(dx, &v_deriv); /* compute the derivatives */
@@ -447,8 +455,9 @@ void AzsSvrg::printParam(const AzOut &out) const
       throw new AzException(AzInputError, "AzsSvrg::resetParam", s.c_str()); 
     }
   }
-  if (!doing_classif() && loss_type != AzsLoss_Square) {
-    throw new AzException(AzInputError, "AzsSvrg::resetParam", "Only square loss is supported for regression tasks."); 
+  if (!doing_classif() && loss_type != AzsLoss_Square && loss_type != AzsLoss_Logistic) {//regression task!NOTICE:we have change it
+    throw new AzException(AzInputError, "AzsSvrg::resetParam", "Only square or Logistic loss is supported for regression tasks.");
+    //throw new AzException(AzInputError, "AzsSvrg::resetParam", "Only square loss is supported for regression tasks."); 
   }
   if (loss_type == AzsLoss_None) {
     AzBytArr s(kw_loss); s.c(" must be specified.  "); allLoss_str(s); 

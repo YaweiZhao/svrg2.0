@@ -335,6 +335,7 @@ void AzSvDataS::readData_Large(const char *data_fn,
   
   int data_num = ia_line_len.size(); 
   int max_line_len = ia_line_len.max(); 
+  cout<<"data_num:"<<data_num<<"max_line_len:"<<max_line_len<<endl;
   if (data_num <= 0) {
     throw new AzException(AzInputNotValid, eyec, "Empty data"); 
   }
@@ -371,7 +372,7 @@ void AzSvDataS::readData_Large(const char *data_fn,
     }
     file.seek(0);  /* rewind to the beginning */
   }
-
+  cout<<"max_data_num:"<<max_data_num<<endl;
   /*---  read features  ---*/
   if (max_data_num > 0) {
     data_num = MIN(data_num, max_data_num); 
@@ -382,7 +383,13 @@ void AzSvDataS::readData_Large(const char *data_fn,
   for (dx = 0; dx < data_num; ++dx, ++line_no) {
     int io_len = ia_line_len.get(line_no); 
     int len = file.readBytes(buff, io_len); 
-    if (len != io_len) throw new AzException(eyec, "conflict in the length of lines"); 
+    //cout<<"len:"<<len<<"io_len:"<<io_len<<endl;
+    if (len != io_len) 
+      {
+	cout<<"dx:"<<dx<<endl;
+	throw new AzException(eyec, "conflict in the length of lines"); 
+        
+      }
     buff[len] = '\0';  /* to make it a C string */
     if (isSparse) {
       parseDataLine_Sparse(buff, len, f_num, data_fn, line_no+1,
