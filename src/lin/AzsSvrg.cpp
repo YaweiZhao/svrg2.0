@@ -87,37 +87,37 @@ void AzsSvrg::_train_test()
   AzsSvrgData_compact prev_compact; 
   int ite;
   string str1,str2,str3;
+  time_t time_start,time_end;
+  long cost_time=0;
   for (ite = 0; ite < ite_num; ++ite) {
-    char ite_count[4];
-    sprintf(ite_count,"%d",ite);
-    str1 = "\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>";
-    str2 = "th iteration>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n";
-    string str_temp_0 = str1+ite_count+str2;
-    const char* log = str_temp_0.c_str();
-    AzTimeLog::print2Logfile(log,"log.txt","a+");
-    AzTimeLog::print2Logfile(log,"weights_log.txt","a+");
+    //char ite_count[4];
+    //sprintf(ite_count,"%d",ite);
+    //str1 = "\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>";
+    //str2 = "th iteration>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n";
+    //string str_temp_0 = str1+ite_count+str2;
+    //const char* log = str_temp_0.c_str();
+    //AzTimeLog::print2Logfile(log,"log.txt","a+");
+    //AzTimeLog::print2Logfile(log,"weights_log.txt","a+");
 
     if (do_show_timing) AzTimeLog::print("---  iteration#", ite+1, log_out); 
-    if (doing_svrg(ite) && (ite-sgd_ite) % svrg_interval == 0) {
+    if (doing_svrg(ite)) {
       if (do_show_timing) AzTimeLog::print("Computing gradient average ... ", log_out); 
+      time(&time_start);
       if (do_compact) get_avg_gradient_compact(&prev_compact); 
-      else            get_avg_gradient_fast(&prev_fast); 
-    }  
-
+      else            get_avg_gradient_fast(&prev_fast);
+      time(&time_end);
+      cost_time+=(time_end-time_start);
+    }
     if (do_show_timing) AzTimeLog::print("Updating weights ... ", log_out); 
     AzIntArr ia_dxs; 
-    const int *dxs = gen_seq(dataSize(), ia_dxs); 
-    /*******************************************************/
-    //we add a speedup factor to the learning rate, and hope this can speedup the calculation
-    double lam_speedup=0.0;
-    lam_speedup=prev_fast.m_gavg.col(0).selfInnerProduct();
-    lam=lam+lam_speedup;
-    //time_t v_local_time;
-    /********************************************************/
+    const int *dxs = gen_seq(dataSize(), ia_dxs);   
     int ix; 
     //for (ix = 0; ix < dataSize(); ++ix) {//original settings
+    double eta_base = eta;
+    time(&time_start);
     for(ix=0;ix<1000;ix++){// we observe that the loss will not decrease when the inner loop runs for 1000 rounds   
       int dx = dxs[ix];  /* data point index */
+      cout<<"random befor innner loop: "<<dx<<endl;
       AzDvect v_deriv(class_num); 
       get_deriv(dx, &v_deriv); /* compute the derivatives */
       if (doing_svrg(ite)) {
@@ -127,29 +127,54 @@ void AzsSvrg::_train_test()
       else {
         updateDelta_sgd(dx, &v_deriv);       
       } 
+      //time(&time_end);
+      //cost_time+=(time_end-time_start);
       /*log each update and the value of loss function*/
-      double loss_1;/*this is the value of loss function which does not include the regularization*/
-      double loss = get_loss_regress(m_trn_x, v_trn_y, &loss_1);
-      char itnum[32],loss_str[32];
-      sprintf(itnum,"%d",ix);
-      sprintf(loss_str,"%f",loss);
-      str1 = "\n#############   Inner loop:";
-      str2 = "   the value of loss function is:";
-      str3 = "\n";
-      string str_temp = str1+itnum+str2+loss_str+str3;
-      const char* log2 = str_temp.c_str();
-      AzTimeLog::print2Logfile(log2,"log.txt","a+");
-      str1 = "\n>Inner loop:";
-      str2 = ":\n";
-      string str0 = str1 +itnum+str2;
-      const char* log_weights = str0.c_str();
-      AzTimeLog::print2Logfile(log_weights,"weights_log.txt","a+");
-      const int dim = m_trn_x->rowNum();
-      double* weights = m_w.get(0);
-      AzTimeLog::printDouble2Logfile(weights, dim,"weights_log.txt","a+");
+      //double loss_1;/*this is the value of loss function which does not include the regularization*/
+      //double loss = get_loss_regress(m_trn_x, v_trn_y, &loss_1);
+      //char itnum[32],loss_str[32];
+      //sprintf(itnum,"%d",ix);
+      //sprintf(loss_str,"%f",loss);
+      //str1 = "\n#############   Inner loop:";
+      //str2 = "   the value of loss function is:";
+      //str3 = "\n";
+      //string str_temp = str1+itnum+str2+loss_str+str3;
+      //const char* log2 = str_temp.c_str();
+      //AzTimeLog::print2Logfile(log2,"inner_log.txt","a+");
+      //str1 = "\n>Inner loop:";
+      //str2 = ":\n";
+      //string str0 = str1 +itnum+str2;
+      //const char* log_weights = str0.c_str();
+      //AzTimeLog::print2Logfile(log_weights,"weights_log.txt","a+");
+      //const int dim = m_trn_x->rowNum();
+      //double* weights = m_w.get(0);
+      //AzTimeLog::printDouble2Logfile(weights, dim,"weights_log.txt","a+");
+      //double eta_speedup=0.0;
+      //double scale_x=sqrt(m_trn_x->md->col(dx)->squareSum());
+      //eta_speedup=scale_x*fabs(v_deriv.get(0));
+      //cout<<"scale_x:"<<scale_x<<"v_deriv.get(0)"<<v_deriv.get(0)<<endl;
+      //cout<<">>>eta_base:"<<eta_base<<">>>>>>>>>>>>>eta_speedup:"<<eta_speedup<<endl;
+      //eta = (eta_speedup+1)*eta_base;//lam_base must be smaller than L because of  L-smooth
+      //time(&time_start);
       flushDelta(); 
+      //time(&time_end);
+      //cost_time+=(time_end-time_start);
     }
-    //show_perf(ite); 
+    time(&time_end);
+    cost_time+=(time_end-time_start);
+    stringstream s;
+    s<<cost_time<<"\n";
+    AzTimeLog::print2Logfile(s.str().c_str(),"loss_time_footprint.txt","a+");
+    double loss_1=0;
+    char loss_str[32];
+    double loss = get_loss_regress(m_trn_x, v_trn_y, &loss_1);
+    sprintf(loss_str,"%f",loss);
+    str3 = "\n";
+    string str_temp = loss_str+str3;
+    const char* log2 = str_temp.c_str();
+    AzTimeLog::print2Logfile(log2,"loss.txt","a+");
+
+    //show_perf(ite);
   }
 
   if (do_show_timing) AzTimeLog::print("--- End of training ... ", log_out); 

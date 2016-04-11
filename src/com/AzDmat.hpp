@@ -690,7 +690,7 @@ protected:
 
 /*-----------------------------------------------------------------------*/
 class AzDSmat {
-protected: 
+public: 
   const AzDmat *md; 
   const AzSmat *ms; 
 public: 

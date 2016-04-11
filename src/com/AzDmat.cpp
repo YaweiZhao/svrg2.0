@@ -1327,6 +1327,7 @@ double AzDvect::innerProduct(const AzDvect *dbles1) const
   }
 
   if (num != dbles1->num) {
+    //cout<<">>>>>>>>>>>>>>>>>>>>>>>>>>num:"<<num<<"dbles1->num:"<<dbles1->num<<endl;//for debug
     throw new AzException(eyec, "shape mismatch"); 
   }
 

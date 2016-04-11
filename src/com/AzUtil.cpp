@@ -1894,10 +1894,11 @@ void AzTimeLog::print2Logfile(const char text[],const char* fn, const char* mod)
   AzFile af(fn);
   af.open(mod);
 
-  time_t ltime; 
-  time(&ltime); 
+  //time_t ltime; 
+  //time(&ltime); 
   stringstream s;
-  s<< ctime(&ltime)<<text;
+  //s<< ctime(&ltime)<<text;
+  s<<text;
   int size = strlen(s.str().c_str());
   //char* str_time = ctime(&ltime);
   //const int length = strlen(str_time)+strlen(text)+1;
