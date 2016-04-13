@@ -89,6 +89,7 @@ void AzsSvrg::_train_test()
   string str1,str2,str3;
   time_t time_start,time_end;
   long cost_time=0;
+  double eta_base = eta;
   for (ite = 0; ite < ite_num; ++ite) {
     //char ite_count[4];
     //sprintf(ite_count,"%d",ite);
@@ -103,30 +104,39 @@ void AzsSvrg::_train_test()
     if (doing_svrg(ite)) {
       if (do_show_timing) AzTimeLog::print("Computing gradient average ... ", log_out); 
       time(&time_start);
-      if (do_compact) get_avg_gradient_compact(&prev_compact); 
-      else            get_avg_gradient_fast(&prev_fast);
+      if (do_compact) 
+      {
+        //cout<<"......Compact....\n";
+        get_avg_gradient_compact(&prev_compact);
+      } 
+      else            
+        get_avg_gradient_fast(&prev_fast);
       time(&time_end);
       cost_time+=(time_end-time_start);
     }
     if (do_show_timing) AzTimeLog::print("Updating weights ... ", log_out); 
-    AzIntArr ia_dxs; 
-    const int *dxs = gen_seq(dataSize(), ia_dxs);   
+    AzIntArr ia_dxs;
+    long data_size=dataSize(); 
+    const int *dxs = gen_seq(data_size/*dataSize()*/, ia_dxs);   
     int ix; 
     //for (ix = 0; ix < dataSize(); ++ix) {//original settings
-    double eta_base = eta;
     time(&time_start);
     for(ix=0;ix<1000;ix++){// we observe that the loss will not decrease when the inner loop runs for 1000 rounds   
-      int dx = dxs[ix];  /* data point index */
-      cout<<"random befor innner loop: "<<dx<<endl;
+      //time(&time_start);
+      int dx = dxs[ix%data_size];  /* data point index */
       AzDvect v_deriv(class_num); 
       get_deriv(dx, &v_deriv); /* compute the derivatives */
       if (doing_svrg(ite)) {
         if (do_compact) updateDelta_svrg_compact(dx, &v_deriv, prev_compact); 
         else            updateDelta_svrg_fast(dx, &v_deriv, prev_fast); 
       }
-      else {
-        updateDelta_sgd(dx, &v_deriv);       
-      } 
+      else 
+      {
+        flushDelta();
+        break;
+        // updateDelta_sgd(dx, &v_deriv);       
+      }
+      flushDelta(); 
       //time(&time_end);
       //cost_time+=(time_end-time_start);
       /*log each update and the value of loss function*/
@@ -155,10 +165,6 @@ void AzsSvrg::_train_test()
       //cout<<"scale_x:"<<scale_x<<"v_deriv.get(0)"<<v_deriv.get(0)<<endl;
       //cout<<">>>eta_base:"<<eta_base<<">>>>>>>>>>>>>eta_speedup:"<<eta_speedup<<endl;
       //eta = (eta_speedup+1)*eta_base;//lam_base must be smaller than L because of  L-smooth
-      //time(&time_start);
-      flushDelta(); 
-      //time(&time_end);
-      //cost_time+=(time_end-time_start);
     }
     time(&time_end);
     cost_time+=(time_end-time_start);
